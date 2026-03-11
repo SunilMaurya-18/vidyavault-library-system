@@ -1,0 +1,3049 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VidyaVault</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        /* ═══════════════════════════════════════════
+   CSS VARIABLES — DUAL THEME
+═══════════════════════════════════════════ */
+        :root {
+            --ease: cubic-bezier(.4, 0, .2, 1);
+            --ease-spring: cubic-bezier(.34, 1.56, .64, 1);
+        }
+
+        [data-theme="dark"] {
+            --bg: #080b12;
+            --bg2: #0d1120;
+            --bg3: #111827;
+            --bg4: #1a2234;
+            --surface: #141c2e;
+            --surface2: #1c2640;
+            --border: rgba(99, 117, 178, 0.13);
+            --border2: rgba(99, 117, 178, 0.22);
+            --text: #e8edf8;
+            --text2: #8b97be;
+            --text3: #4e5d85;
+            --accent: #4f8ef7;
+            --accent2: #6ea3ff;
+            --accent-glow: rgba(79, 142, 247, 0.25);
+            --gold: #f0c060;
+            --gold-glow: rgba(240, 192, 96, 0.18);
+            --green: #34d399;
+            --green-glow: rgba(52, 211, 153, 0.18);
+            --red: #f87171;
+            --red-glow: rgba(248, 113, 113, 0.18);
+            --amber: #fbbf24;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.7);
+            --radius: 14px;
+            --radius-sm: 8px;
+        }
+
+        [data-theme="light"] {
+            --bg: #f0f3fb;
+            --bg2: #e8edf8;
+            --bg3: #ffffff;
+            --bg4: #dde4f5;
+            --surface: #ffffff;
+            --surface2: #f5f7ff;
+            --border: rgba(79, 107, 178, 0.12);
+            --border2: rgba(79, 107, 178, 0.22);
+            --text: #0f1629;
+            --text2: #4a5680;
+            --text3: #96a3c8;
+            --accent: #3470e4;
+            --accent2: #2558c8;
+            --accent-glow: rgba(52, 112, 228, 0.15);
+            --gold: #c9860a;
+            --gold-glow: rgba(201, 134, 10, 0.12);
+            --green: #059669;
+            --green-glow: rgba(5, 150, 105, 0.12);
+            --red: #dc2626;
+            --red-glow: rgba(220, 38, 38, 0.12);
+            --amber: #d97706;
+            --shadow: 0 4px 24px rgba(15, 22, 41, 0.08);
+            --shadow-lg: 0 16px 48px rgba(15, 22, 41, 0.14);
+        }
+
+        /* ═══════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html {
+            font-size: 15px;
+            -webkit-font-smoothing: antialiased
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background .3s var(--ease), color .3s var(--ease);
+        }
+
+        button {
+            cursor: pointer;
+            font-family: inherit;
+            border: none;
+            outline: none
+        }
+
+        input,
+        select,
+        textarea {
+            font-family: inherit;
+            outline: none
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 99px
+        }
+
+        /* ═══════════════════════════════════════════
+   GRID NOISE OVERLAY (dark only)
+═══════════════════════════════════════════ */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(ellipse 80% 60% at 50% -10%, rgba(79, 142, 247, 0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 90% 80%, rgba(240, 192, 96, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity .4s;
+        }
+
+        [data-theme="light"] body::before {
+            opacity: 0.4
+        }
+
+        /* ═══════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════ */
+        #auth-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            background: var(--bg);
+            transition: opacity .5s var(--ease), transform .5s var(--ease);
+        }
+
+        #auth-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1.04)
+        }
+
+        .auth-wrap {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: min(900px, 95vw);
+            min-height: 560px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border2);
+            animation: fadeUp .7s var(--ease-spring) both;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(28px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* Left panel */
+        .auth-left {
+            background: linear-gradient(145deg, #0f1b3a 0%, #0a1428 50%, #060d1f 100%);
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        [data-theme="light"] .auth-left {
+            background: linear-gradient(145deg, #1e3a8a, #1e40af, #1d4ed8)
+        }
+
+        .auth-left::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 70%, rgba(79, 142, 247, 0.15), transparent 60%);
+        }
+
+        .auth-brand {
+            position: relative;
+            z-index: 1
+        }
+
+        .auth-brand .logo-mark {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(79, 142, 247, 0.4);
+        }
+
+        .auth-brand h1 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2.4rem;
+            line-height: 1.15;
+            color: #fff;
+            margin-bottom: 14px;
+        }
+
+        .auth-brand p {
+            font-size: .9rem;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.7
+        }
+
+        .auth-stats {
+            display: flex;
+            gap: 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-stat {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+        }
+
+        .auth-stat .num {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.7rem;
+            color: #fff;
+        }
+
+        .auth-stat .lbl {
+            font-size: .75rem;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 2px
+        }
+
+        .auth-circles {
+            position: absolute;
+            right: -60px;
+            top: -60px;
+            z-index: 0
+        }
+
+        .auth-circles circle {
+            fill: none
+        }
+
+        /* Right panel */
+        .auth-right {
+            background: var(--surface);
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .auth-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 32px;
+            background: var(--bg2);
+            border-radius: 10px;
+            padding: 4px;
+            border: 1px solid var(--border);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 9px;
+            text-align: center;
+            border-radius: 7px;
+            font-size: .88rem;
+            font-weight: 500;
+            color: var(--text2);
+            transition: all .2s var(--ease);
+            background: transparent;
+        }
+
+        .auth-tab.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-form-panel {
+            display: none
+        }
+
+        .auth-form-panel.active {
+            display: block;
+            animation: fadeUp .3s var(--ease) both
+        }
+
+        .auth-right h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.9rem;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .auth-right .subtitle {
+            font-size: .88rem;
+            color: var(--text2);
+            margin-bottom: 28px
+        }
+
+        .form-group {
+            margin-bottom: 18px
+        }
+
+        .form-group label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 500;
+            color: var(--text2);
+            margin-bottom: 7px;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 13px 16px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: .95rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .form-group input::placeholder {
+            color: var(--text3)
+        }
+
+        .auth-error {
+            background: var(--red-glow);
+            border: 1px solid var(--red);
+            color: var(--red);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: .85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .auth-error.show {
+            display: block;
+            animation: shake .3s ease
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            25% {
+                transform: translateX(-6px)
+            }
+
+            75% {
+                transform: translateX(6px)
+            }
+        }
+
+        .auth-success {
+            background: var(--green-glow);
+            border: 1px solid var(--green);
+            color: var(--green);
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: .85rem;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .auth-success.show {
+            display: block
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 10px;
+            font-size: .95rem;
+            font-weight: 600;
+            letter-spacing: .02em;
+            transition: all .2s var(--ease);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(255, 255, 255, .1), transparent);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px var(--accent-glow)
+        }
+
+        .btn-primary:active {
+            transform: translateY(0)
+        }
+
+        /* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+        #app {
+            display: none;
+            height: 100vh;
+            grid-template-columns: 240px 1fr;
+            grid-template-rows: 1fr;
+            position: relative;
+            z-index: 1;
+        }
+
+        #app.visible {
+            display: grid;
+            animation: fadeUp .4s var(--ease) both
+        }
+
+        /* ═══════════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════════ */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-logo .logomark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-logo .icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), #7b5cf5);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            box-shadow: 0 4px 12px var(--accent-glow);
+        }
+
+        .sidebar-logo .name {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.25rem;
+            color: var(--text);
+        }
+
+        .sidebar-logo .version {
+            font-size: .7rem;
+            color: var(--text3);
+            margin-top: 1px;
+        }
+
+        .nav-section {
+            padding: 20px 12px 8px;
+            flex: 1
+        }
+
+        .nav-label {
+            font-size: .68rem;
+            font-weight: 600;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--text3);
+            padding: 0 8px;
+            margin-bottom: 6px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            color: var(--text2);
+            font-size: .88rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .18s var(--ease);
+            margin-bottom: 2px;
+            position: relative;
+        }
+
+        .nav-item:hover {
+            background: var(--bg2);
+            color: var(--text)
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(79, 142, 247, 0.15), rgba(79, 142, 247, 0.08));
+            color: var(--accent);
+        }
+
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            bottom: 20%;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 0 3px 3px 0;
+        }
+
+        .nav-item .nav-icon {
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--accent);
+            color: #fff;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 99px;
+        }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .user-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 10px;
+            border-radius: 10px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--gold));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .user-info .user-name {
+            font-size: .85rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .user-info .user-role {
+            font-size: .72rem;
+            color: var(--text3)
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            background: transparent;
+            color: var(--text3);
+            font-size: 1rem;
+            padding: 4px;
+            border-radius: 6px;
+            transition: color .2s;
+        }
+
+        .logout-btn:hover {
+            color: var(--red)
+        }
+
+        /* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top bar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 28px;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .topbar-title {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.4rem;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .topbar-subtitle {
+            font-size: .82rem;
+            color: var(--text3);
+            margin-top: 1px
+        }
+
+        /* Theme toggle */
+        .theme-toggle {
+            width: 52px;
+            height: 28px;
+            background: var(--bg2);
+            border-radius: 99px;
+            border: 1.5px solid var(--border2);
+            position: relative;
+            cursor: pointer;
+            transition: background .3s;
+        }
+
+        .theme-toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #7b5cf5);
+            transition: transform .3s var(--ease-spring);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        [data-theme="light"] .theme-toggle-knob {
+            transform: translateX(24px)
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: var(--text2);
+            transition: all .2s;
+            cursor: pointer;
+        }
+
+        .icon-btn:hover {
+            background: var(--bg3);
+            color: var(--text);
+            border-color: var(--border2)
+        }
+
+        /* Content area */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 28px
+        }
+
+        /* Page visibility */
+        .page {
+            display: none
+        }
+
+        .page.active {
+            display: block;
+            animation: pageIn .3s var(--ease) both
+        }
+
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+
+        /* ═══════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════ */
+
+        /* Section header */
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .section-header h2 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .section-header p {
+            font-size: .85rem;
+            color: var(--text2);
+            margin-top: 3px
+        }
+
+        /* Cards grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 26px;
+        }
+
+        @media(max-width:1100px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr)
+            }
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 22px;
+            position: relative;
+            overflow: hidden;
+            transition: transform .2s var(--ease), box-shadow .2s;
+            cursor: default;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow)
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            opacity: .06;
+        }
+
+        .stat-card.blue::after {
+            background: var(--accent)
+        }
+
+        .stat-card.gold::after {
+            background: var(--gold)
+        }
+
+        .stat-card.green::after {
+            background: var(--green)
+        }
+
+        .stat-card.red::after {
+            background: var(--red)
+        }
+
+        .stat-card .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+        }
+
+        .stat-card.blue .card-icon {
+            background: rgba(79, 142, 247, 0.13);
+            color: var(--accent)
+        }
+
+        .stat-card.gold .card-icon {
+            background: rgba(240, 192, 96, 0.13);
+            color: var(--gold)
+        }
+
+        .stat-card.green .card-icon {
+            background: rgba(52, 211, 153, 0.13);
+            color: var(--green)
+        }
+
+        .stat-card.red .card-icon {
+            background: rgba(248, 113, 113, 0.13);
+            color: var(--red)
+        }
+
+        .stat-card .card-value {
+            font-family: 'Instrument Serif', serif;
+            font-size: 2.2rem;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-card .card-label {
+            font-size: .82rem;
+            color: var(--text2);
+            font-weight: 500
+        }
+
+        .stat-card .card-delta {
+            font-size: .75rem;
+            margin-top: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 8px;
+            border-radius: 99px;
+        }
+
+        .stat-card.blue .card-delta {
+            background: rgba(79, 142, 247, 0.1);
+            color: var(--accent)
+        }
+
+        .stat-card.gold .card-delta {
+            background: rgba(240, 192, 96, 0.1);
+            color: var(--gold)
+        }
+
+        .stat-card.green .card-delta {
+            background: rgba(52, 211, 153, 0.1);
+            color: var(--green)
+        }
+
+        .stat-card.red .card-delta {
+            background: rgba(248, 113, 113, 0.1);
+            color: var(--red)
+        }
+
+        /* Table */
+        .table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .table-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            padding: 9px 14px;
+            flex: 1;
+            min-width: 180px;
+            max-width: 320px;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow)
+        }
+
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            font-size: .88rem;
+            width: 100%;
+        }
+
+        .search-box input::placeholder {
+            color: var(--text3)
+        }
+
+        .search-icon {
+            color: var(--text3);
+            font-size: .95rem;
+            flex-shrink: 0
+        }
+
+        .filter-select {
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            color: var(--text);
+            border-radius: 9px;
+            padding: 9px 14px;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+
+        .filter-select:focus {
+            border-color: var(--accent);
+            outline: none
+        }
+
+        [data-theme="dark"] .filter-select option {
+            background: #1a2234
+        }
+
+        [data-theme="light"] .filter-select option {
+            background: #fff
+        }
+
+        .table-scroll {
+            overflow-x: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .875rem
+        }
+
+        thead {
+            background: var(--bg2)
+        }
+
+        thead th {
+            padding: 13px 16px;
+            text-align: left;
+            font-size: .72rem;
+            font-weight: 600;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--text3);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+            transition: color .2s;
+        }
+
+        thead th:hover {
+            color: var(--text2)
+        }
+
+        thead th .sort-icon {
+            margin-left: 4px;
+            opacity: .4
+        }
+
+        thead th.sorted .sort-icon {
+            opacity: 1;
+            color: var(--accent)
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+
+        tbody tr:last-child {
+            border-bottom: none
+        }
+
+        tbody tr:hover {
+            background: var(--bg2)
+        }
+
+        tbody td {
+            padding: 14px 16px;
+            color: var(--text);
+            vertical-align: middle
+        }
+
+        tbody td .td-sub {
+            font-size: .78rem;
+            color: var(--text2);
+            margin-top: 2px
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: .75rem;
+            font-weight: 600;
+        }
+
+        .badge-green {
+            background: rgba(52, 211, 153, 0.12);
+            color: var(--green)
+        }
+
+        .badge-red {
+            background: rgba(248, 113, 113, 0.12);
+            color: var(--red)
+        }
+
+        .badge-amber {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--amber)
+        }
+
+        .badge-blue {
+            background: rgba(79, 142, 247, 0.12);
+            color: var(--accent)
+        }
+
+        .badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor
+        }
+
+        /* Action buttons in table */
+        .action-btns {
+            display: flex;
+            gap: 6px
+        }
+
+        .act-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            transition: all .18s;
+            cursor: pointer;
+            background: var(--bg2);
+            color: var(--text2);
+            border: 1px solid var(--border);
+        }
+
+        .act-btn:hover.edit {
+            background: rgba(79, 142, 247, 0.15);
+            color: var(--accent);
+            border-color: var(--accent)
+        }
+
+        .act-btn:hover.del {
+            background: rgba(248, 113, 113, 0.15);
+            color: var(--red);
+            border-color: var(--red)
+        }
+
+        .act-btn:hover.issue {
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--green);
+            border-color: var(--green)
+        }
+
+        .act-btn:hover.ret {
+            background: rgba(251, 191, 36, 0.15);
+            color: var(--amber);
+            border-color: var(--amber)
+        }
+
+        /* Empty state */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 3rem;
+            margin-bottom: 14px;
+            opacity: .3
+        }
+
+        .empty-state p {
+            color: var(--text2);
+            font-size: .9rem
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-top: 1px solid var(--border);
+            font-size: .82rem;
+            color: var(--text2);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .page-btns {
+            display: flex;
+            gap: 4px
+        }
+
+        .page-btn {
+            padding: 6px 12px;
+            border-radius: 7px;
+            background: transparent;
+            color: var(--text2);
+            border: 1px solid var(--border);
+            font-size: .82rem;
+            font-weight: 500;
+            transition: all .18s;
+            cursor: pointer;
+        }
+
+        .page-btn:hover {
+            background: var(--bg2);
+            color: var(--text)
+        }
+
+        .page-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent)
+        }
+
+        .page-btn:disabled {
+            opacity: .35;
+            cursor: default
+        }
+
+        /* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 9px 18px;
+            border-radius: 9px;
+            font-size: .88rem;
+            font-weight: 600;
+            transition: all .2s var(--ease);
+            cursor: pointer;
+            letter-spacing: .01em;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: #fff
+        }
+
+        .btn-accent:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px var(--accent-glow)
+        }
+
+        .btn-ghost {
+            background: var(--bg2);
+            color: var(--text2);
+            border: 1px solid var(--border);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg3);
+            color: var(--text);
+            border-color: var(--border2)
+        }
+
+        .btn-danger {
+            background: var(--red-glow);
+            color: var(--red);
+            border: 1px solid rgba(248, 113, 113, 0.3)
+        }
+
+        .btn-danger:hover {
+            background: var(--red);
+            color: #fff
+        }
+
+        .btn-success {
+            background: var(--green-glow);
+            color: var(--green);
+            border: 1px solid rgba(52, 211, 153, 0.3)
+        }
+
+        .btn-success:hover {
+            background: var(--green);
+            color: #000
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: .8rem;
+            border-radius: 7px
+        }
+
+        /* ═══════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════ */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 11, 18, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .25s var(--ease);
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 20px;
+            width: min(520px, 92vw);
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: scale(.94) translateY(12px);
+            transition: transform .3s var(--ease-spring);
+        }
+
+        .modal-overlay.open .modal {
+            transform: scale(1) translateY(0)
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px 0;
+        }
+
+        .modal-header h3 {
+            font-family: 'Instrument Serif', serif;
+            font-size: 1.4rem;
+            color: var(--text);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg2);
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all .18s;
+        }
+
+        .modal-close:hover {
+            background: var(--red-glow);
+            color: var(--red)
+        }
+
+        .modal-body {
+            padding: 20px 28px 28px
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 0 28px 28px;
+        }
+
+        .field-group {
+            margin-bottom: 18px
+        }
+
+        .field-group label {
+            display: block;
+            font-size: .78rem;
+            font-weight: 600;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            color: var(--text2);
+            margin-bottom: 7px;
+        }
+
+        .field-group input,
+        .field-group select,
+        .field-group textarea {
+            width: 100%;
+            padding: 12px 14px;
+            background: var(--bg2);
+            border: 1.5px solid var(--border);
+            border-radius: 9px;
+            color: var(--text);
+            font-size: .9rem;
+            transition: border-color .2s, box-shadow .2s;
+        }
+
+        .field-group input:focus,
+        .field-group select:focus,
+        .field-group textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .field-group input::placeholder {
+            color: var(--text3)
+        }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        /* ═══════════════════════════════════════════
+   DASHBOARD SPECIFIC
+═══════════════════════════════════════════ */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 20px;
+        }
+
+        @media(max-width:1000px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .activity-feed {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+
+        .feed-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .feed-header h3 {
+            font-size: .95rem;
+            font-weight: 600;
+            color: var(--text)
+        }
+
+        .feed-body {
+            padding: 8px 0
+        }
+
+        .feed-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 20px;
+            transition: background .15s;
+        }
+
+        .feed-item:hover {
+            background: var(--bg2)
+        }
+
+        .feed-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        .feed-dot.add {
+            background: var(--green)
+        }
+
+        .feed-dot.issue {
+            background: var(--accent)
+        }
+
+        .feed-dot.ret {
+            background: var(--amber)
+        }
+
+        .feed-dot.del {
+            background: var(--red)
+        }
+
+        .feed-dot.login {
+            background: var(--gold)
+        }
+
+        .feed-text {
+            font-size: .84rem;
+            color: var(--text);
+            line-height: 1.5
+        }
+
+        .feed-time {
+            font-size: .75rem;
+            color: var(--text3);
+            margin-top: 2px
+        }
+
+        .quick-actions {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .quick-actions h3 {
+            font-size: .92rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 14px
+        }
+
+        .qa-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px
+        }
+
+        .qa-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 14px;
+            border-radius: 10px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            font-size: .84rem;
+            font-weight: 500;
+            transition: all .18s var(--ease);
+            cursor: pointer;
+        }
+
+        .qa-btn:hover {
+            background: var(--bg3);
+            color: var(--text);
+            border-color: var(--border2);
+            transform: translateY(-1px)
+        }
+
+        .qa-btn .qa-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 18px;
+            border-radius: 12px;
+            min-width: 280px;
+            max-width: 360px;
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            box-shadow: var(--shadow-lg);
+            font-size: .87rem;
+            color: var(--text);
+            animation: toastIn .35s var(--ease-spring) both;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(24px) scale(.96)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1)
+            }
+        }
+
+        .toast.removing {
+            animation: toastOut .25s var(--ease) both
+        }
+
+        @keyframes toastOut {
+            to {
+                opacity: 0;
+                transform: translateX(24px) scale(.96)
+            }
+        }
+
+        .toast-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0
+        }
+
+        .toast-success .toast-icon {
+            color: var(--green)
+        }
+
+        .toast-error .toast-icon {
+            color: var(--red)
+        }
+
+        .toast-info .toast-icon {
+            color: var(--accent)
+        }
+
+        .toast-warning .toast-icon {
+            color: var(--amber)
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            border-radius: 99px;
+            animation: toastProgress 3s linear forwards;
+        }
+
+        .toast-success .toast-progress {
+            background: var(--green)
+        }
+
+        .toast-error .toast-progress {
+            background: var(--red)
+        }
+
+        .toast-info .toast-progress {
+            background: var(--accent)
+        }
+
+        @keyframes toastProgress {
+            from {
+                width: 100%
+            }
+
+            to {
+                width: 0
+            }
+        }
+
+        /* Confirm overlay */
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 11, 18, 0.8);
+            backdrop-filter: blur(6px);
+            z-index: 300;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeUp .2s ease both;
+        }
+
+        .confirm-box {
+            background: var(--surface);
+            border: 1px solid var(--border2);
+            border-radius: 16px;
+            padding: 28px 32px;
+            width: min(380px, 90vw);
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .confirm-box .ci {
+            font-size: 2.4rem;
+            margin-bottom: 12px
+        }
+
+        .confirm-box h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 8px
+        }
+
+        .confirm-box p {
+            font-size: .87rem;
+            color: var(--text2);
+            margin-bottom: 22px;
+            line-height: 1.6
+        }
+
+        .confirm-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center
+        }
+
+        /* ═══════════════════════════════════════════
+   ISSUE PAGE — BORROWER RECORDS
+═══════════════════════════════════════════ */
+        .issue-status-wrap {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════
+     AUTH SCREEN
+═══════════════════════════════════════ -->
+    <div id="auth-screen">
+        <div class="auth-wrap">
+            <!-- Left panel -->
+            <div class="auth-left">
+                <svg class="auth-circles" width="200" height="200" viewBox="0 0 200 200">
+                    <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.04)" stroke-width="1" />
+                    <circle cx="100" cy="100" r="55" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+                    <circle cx="100" cy="100" r="30" stroke="rgba(255,255,255,0.08)" stroke-width="1" />
+                </svg>
+                <div class="auth-brand">
+                    <div class="logo-mark">📚</div>
+                    <h1>VidyaVault</h1>
+                    <p>A premium library management system. Manage books, track issues & returns with elegance.</p>
+                </div>
+                <div class="auth-stats">
+                    <div class="auth-stat">
+                        <div class="num" id="as-books">—</div>
+                        <div class="lbl">Books</div>
+                    </div>
+                    <div class="auth-stat">
+                        <div class="num" id="as-issued">—</div>
+                        <div class="lbl">Issued</div>
+                    </div>
+                    <div class="auth-stat">
+                        <div class="num" id="as-users">—</div>
+                        <div class="lbl">Users</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right panel -->
+            <div class="auth-right">
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+                    <button class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+                </div>
+
+                <!-- Login form -->
+                <div class="auth-form-panel active" id="panel-login">
+                    <h2>Welcome back</h2>
+                    <p class="subtitle">Enter your credentials to continue</p>
+                    <div class="auth-error" id="login-error"></div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="login-user" placeholder="Enter username" autocomplete="username" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-pass" placeholder="Enter password"
+                            autocomplete="current-password" />
+                    </div>
+                    <button class="btn-primary" onclick="doLogin()">Sign In →</button>
+                </div>
+
+                <!-- Register form -->
+                <div class="auth-form-panel" id="panel-register">
+                    <h2>Create account</h2>
+                    <p class="subtitle">Join LibraryOS today</p>
+                    <div class="auth-error" id="reg-error"></div>
+                    <div class="auth-success" id="reg-success"></div>
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="reg-name" placeholder="Your full name" />
+                    </div>
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" id="reg-user" placeholder="Choose a username" />
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="reg-pass" placeholder="At least 6 characters" />
+                    </div>
+                    <button class="btn-primary" onclick="doRegister()">Create Account →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+     APP SHELL
+═══════════════════════════════════════ -->
+    <div id="app">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div class="logomark">
+                    <div class="icon">📚</div>
+                    <div>
+                        <div class="name">VidyaVault</div>
+                        <div class="version">Premium v2.0</div>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">Main</div>
+                <div class="nav-item active" onclick="navigate('dashboard')">
+                    <span class="nav-icon">🏠</span> Dashboard
+                </div>
+                <div class="nav-item" onclick="navigate('books')">
+                    <span class="nav-icon">📖</span> Books
+                    <span class="nav-badge" id="nb-books">0</span>
+                </div>
+                <div class="nav-item" onclick="navigate('issues')">
+                    <span class="nav-icon">📤</span> Issues
+                    <span class="nav-badge" id="nb-issues">0</span>
+                </div>
+                <div class="nav-label" style="margin-top:16px">System</div>
+                <div class="nav-item" onclick="navigate('users')">
+                    <span class="nav-icon">👥</span> Users
+                </div>
+                <div class="nav-item" onclick="navigate('activity')">
+                    <span class="nav-icon">📋</span> Activity Log
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-card">
+                    <div class="user-avatar" id="user-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="user-display">Admin</div>
+                        <div class="user-role" id="user-role">Librarian</div>
+                    </div>
+                    <button class="logout-btn" onclick="doLogout()" title="Logout">Log Out</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <div class="main">
+            <header class="topbar">
+                <div>
+                    <div class="topbar-title" id="page-title">Dashboard</div>
+                    <div class="topbar-subtitle" id="page-sub">Overview of your library</div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+                        <div class="theme-toggle-knob" id="theme-knob">☀️</div>
+                    </button>
+                    <button class="icon-btn" onclick="navigate('books')" title="Add Book">＋</button>
+                </div>
+            </header>
+
+            <div class="content">
+
+                <!-- ── DASHBOARD ── -->
+                <div class="page active" id="page-dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card blue">
+                            <div class="card-icon">📚</div>
+                            <div class="card-value" id="s-total-books">0</div>
+                            <div class="card-label">Total Books</div>
+                            <div class="card-delta">📈 All titles</div>
+                        </div>
+                        <div class="stat-card gold">
+                            <div class="card-icon">📦</div>
+                            <div class="card-value" id="s-total-copies">0</div>
+                            <div class="card-label">Total Copies</div>
+                            <div class="card-delta">📦 In inventory</div>
+                        </div>
+                        <div class="stat-card red">
+                            <div class="card-icon">📤</div>
+                            <div class="card-value" id="s-issued">0</div>
+                            <div class="card-label">Currently Issued</div>
+                            <div class="card-delta">🔴 Active loans</div>
+                        </div>
+                        <div class="stat-card green">
+                            <div class="card-icon">✅</div>
+                            <div class="card-value" id="s-available">0</div>
+                            <div class="card-label">Available</div>
+                            <div class="card-delta">✅ Ready to issue</div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div>
+                            <div class="quick-actions">
+                                <h3>Quick Actions</h3>
+                                <div class="qa-grid">
+                                    <button class="qa-btn" onclick="openAddBook()">
+                                        <div class="qa-icon" style="background:rgba(79,142,247,0.13)">📗</div>
+                                        Add New Book
+                                    </button>
+                                    <button class="qa-btn" onclick="navigate('issues');setTimeout(openIssueModal,100)">
+                                        <div class="qa-icon" style="background:rgba(52,211,153,0.13)">📤</div>
+                                        Issue a Book
+                                    </button>
+                                    <button class="qa-btn" onclick="navigate('issues')">
+                                        <div class="qa-icon" style="background:rgba(251,191,36,0.13)">📥</div>
+                                        View Issues
+                                    </button>
+                                    <button class="qa-btn" onclick="navigate('books')">
+                                        <div class="qa-icon" style="background:rgba(240,192,96,0.13)">🔍</div>
+                                        Search Books
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Recent books table -->
+                            <div class="table-wrap">
+                                <div class="table-toolbar">
+                                    <span style="font-size:.9rem;font-weight:600;color:var(--text)">Recent Books</span>
+                                    <button class="btn btn-ghost btn-sm" style="margin-left:auto"
+                                        onclick="navigate('books')">View All →</button>
+                                </div>
+                                <div class="table-scroll">
+                                    <table>
+                                        <thead>
+                                            <tr>
+                                                <th>Title</th>
+                                                <th>Author</th>
+                                                <th>Genre</th>
+                                                <th>Available</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dash-books-body"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Activity feed -->
+                        <div class="activity-feed">
+                            <div class="feed-header">
+                                <h3>Recent Activity</h3>
+                                <button class="btn btn-ghost btn-sm" onclick="navigate('activity')">All logs</button>
+                            </div>
+                            <div class="feed-body" id="feed-body">
+                                <div class="empty-state">
+                                    <div class="empty-icon">📋</div>
+                                    <p>No activity yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── BOOKS PAGE ── -->
+                <div class="page" id="page-books">
+                    <div class="section-header">
+                        <div>
+                            <h2>Book Catalog</h2>
+                            <p>Manage all books in your library</p>
+                        </div>
+                        <button class="btn btn-accent" onclick="openAddBook()">＋ Add Book</button>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-toolbar">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="book-search" placeholder="Search title, author, genre…"
+                                    oninput="renderBooksTable()" />
+                            </div>
+                            <select class="filter-select" id="book-genre-filter" onchange="renderBooksTable()">
+                                <option value="">All Genres</option>
+                                <option>Fiction</option>
+                                <option>Non-Fiction</option>
+                                <option>Technology</option>
+                                <option>Science</option>
+                                <option>History</option>
+                                <option>Biography</option>
+                                <option>Mystery</option>
+                                <option>Fantasy</option>
+                                <option>General</option>
+                            </select>
+                            <select class="filter-select" id="book-avail-filter" onchange="renderBooksTable()">
+                                <option value="">All Status</option>
+                                <option value="available">Available</option>
+                                <option value="unavailable">Unavailable</option>
+                            </select>
+                            <span id="book-count" style="margin-left:auto;font-size:.82rem;color:var(--text2)"></span>
+                        </div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortBooks('id')">ID <span class="sort-icon">↕</span></th>
+                                        <th onclick="sortBooks('title')">Title <span class="sort-icon">↕</span></th>
+                                        <th onclick="sortBooks('author')">Author <span class="sort-icon">↕</span></th>
+                                        <th onclick="sortBooks('genre')">Genre <span class="sort-icon">↕</span></th>
+                                        <th onclick="sortBooks('quantity')">Qty <span class="sort-icon">↕</span></th>
+                                        <th onclick="sortBooks('issued')">Issued <span class="sort-icon">↕</span></th>
+                                        <th>Available</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="books-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <span id="book-page-info"></span>
+                            <div class="page-btns" id="book-page-btns"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ISSUES PAGE ── -->
+                <div class="page" id="page-issues">
+                    <div class="section-header">
+                        <div>
+                            <h2>Issue & Returns</h2>
+                            <p>Track book loans and returns</p>
+                        </div>
+                        <button class="btn btn-accent" onclick="openIssueModal()">📤 Issue Book</button>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-toolbar">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="issue-search" placeholder="Search borrower, title…"
+                                    oninput="renderIssuesTable()" />
+                            </div>
+                            <div class="issue-status-wrap">
+                                <select class="filter-select" id="issue-status-filter" onchange="renderIssuesTable()">
+                                    <option value="">All</option>
+                                    <option value="issued">Issued</option>
+                                    <option value="returned">Returned</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div>
+                            <span id="issue-count" style="margin-left:auto;font-size:.82rem;color:var(--text2)"></span>
+                        </div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th onclick="sortIssues('id')">#<span class="sort-icon">↕</span></th>
+                                        <th onclick="sortIssues('bookTitle')">Book<span class="sort-icon">↕</span></th>
+                                        <th onclick="sortIssues('borrower')">Borrower<span class="sort-icon">↕</span>
+                                        </th>
+                                        <th onclick="sortIssues('issueDate')">Issue Date<span class="sort-icon">↕</span>
+                                        </th>
+                                        <th onclick="sortIssues('dueDate')">Due Date<span class="sort-icon">↕</span>
+                                        </th>
+                                        <th>Return Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="issues-table-body"></tbody>
+                            </table>
+                        </div>
+                        <div class="pagination">
+                            <span id="issue-page-info"></span>
+                            <div class="page-btns" id="issue-page-btns"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── USERS PAGE ── -->
+                <div class="page" id="page-users">
+                    <div class="section-header">
+                        <div>
+                            <h2>User Management</h2>
+                            <p>Manage librarian accounts</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-toolbar">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="user-search" placeholder="Search users…"
+                                    oninput="renderUsersTable()" />
+                            </div>
+                        </div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Username</th>
+                                        <th>Role</th>
+                                        <th>Created</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── ACTIVITY PAGE ── -->
+                <div class="page" id="page-activity">
+                    <div class="section-header">
+                        <div>
+                            <h2>Activity Log</h2>
+                            <p>Full audit trail of all actions</p>
+                        </div>
+                        <button class="btn btn-ghost btn-sm"
+                            onclick="if(confirm('Clear all logs?')){DB.activity=[];saveDB();renderActivityPage();toast('Logs cleared','info')}">Clear
+                            Logs</button>
+                    </div>
+                    <div class="table-wrap">
+                        <div class="table-toolbar">
+                            <div class="search-box">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="act-search" placeholder="Search logs…"
+                                    oninput="renderActivityPage()" />
+                            </div>
+                            <select class="filter-select" id="act-type-filter" onchange="renderActivityPage()">
+                                <option value="">All Types</option>
+                                <option value="ADD">Add</option>
+                                <option value="EDIT">Edit</option>
+                                <option value="DELETE">Delete</option>
+                                <option value="ISSUE">Issue</option>
+                                <option value="RETURN">Return</option>
+                                <option value="LOGIN">Login</option>
+                            </select>
+                        </div>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Type</th>
+                                        <th>Description</th>
+                                        <th>User</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activity-table-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- /content -->
+        </div><!-- /main -->
+    </div><!-- /app -->
+
+    <!-- ═══════════════════════════════════════
+     MODALS
+═══════════════════════════════════════ -->
+    <!-- Add/Edit Book Modal -->
+    <div class="modal-overlay" id="book-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="book-modal-title">Add New Book</h3>
+                <button class="modal-close" onclick="closeModal('book-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="book-edit-id" />
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Book Title *</label>
+                        <input type="text" id="book-title" placeholder="Enter title" />
+                    </div>
+                    <div class="field-group">
+                        <label>Author *</label>
+                        <input type="text" id="book-author" placeholder="Author name" />
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Genre</label>
+                        <select id="book-genre">
+                            <option>General</option>
+                            <option>Fiction</option>
+                            <option>Non-Fiction</option>
+                            <option>Technology</option>
+                            <option>Science</option>
+                            <option>History</option>
+                            <option>Biography</option>
+                            <option>Mystery</option>
+                            <option>Fantasy</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label>Quantity *</label>
+                        <input type="number" id="book-qty" placeholder="1" min="0" />
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>ISBN (optional)</label>
+                    <input type="text" id="book-isbn" placeholder="978-XXXXXXXXXX" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('book-modal')">Cancel</button>
+                <button class="btn btn-accent" onclick="saveBook()">Save Book</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Book Modal -->
+    <div class="modal-overlay" id="issue-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Issue a Book</h3>
+                <button class="modal-close" onclick="closeModal('issue-modal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="field-group">
+                    <label>Select Book *</label>
+                    <select id="issue-book-id">
+                        <option value="">— Choose a book —</option>
+                    </select>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Borrower Name *</label>
+                        <input type="text" id="issue-borrower" placeholder="Full name" />
+                    </div>
+                    <div class="field-group">
+                        <label>Borrower ID / Contact</label>
+                        <input type="text" id="issue-contact" placeholder="ID / phone" />
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field-group">
+                        <label>Issue Date</label>
+                        <input type="date" id="issue-date" />
+                    </div>
+                    <div class="field-group">
+                        <label>Due Date</label>
+                        <input type="date" id="issue-due" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-ghost" onclick="closeModal('issue-modal')">Cancel</button>
+                <button class="btn btn-accent" onclick="saveIssue()">Issue Book</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ═══════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════ -->
+    <script>
+        /* ════════════════════════════════════════
+           DATABASE (localStorage as persistent DB)
+        ════════════════════════════════════════ */
+        const DB_KEY = 'libraryos_db_v2';
+
+        let DB = {
+            users: [],
+            books: [],
+            issues: [],
+            activity: [],
+            _booksSeq: 1,
+            _issuesSeq: 1,
+            _usersSeq: 1,
+            _actSeq: 1
+        };
+
+        function loadDB() {
+            try {
+                const raw = localStorage.getItem(DB_KEY);
+                if (raw) DB = JSON.parse(raw);
+                // Ensure sequences exist
+                DB._booksSeq = DB._booksSeq || (DB.books.length ? Math.max(...DB.books.map(b => b.id)) + 1 : 1);
+                DB._issuesSeq = DB._issuesSeq || (DB.issues.length ? Math.max(...DB.issues.map(i => i.id)) + 1 : 1);
+                DB._usersSeq = DB._usersSeq || (DB.users.length ? Math.max(...DB.users.map(u => u.id)) + 1 : 1);
+                DB._actSeq = DB._actSeq || (DB.activity.length ? Math.max(...DB.activity.map(a => a.id)) + 1 : 1);
+            } catch (e) { console.warn('DB load error', e) }
+        }
+
+        function saveDB() {
+            localStorage.setItem(DB_KEY, JSON.stringify(DB));
+        }
+
+        function seedDB() {
+
+
+        }
+
+        function hashPass(p) {
+            // Simple hash for demo purposes
+            let h = 0;
+            for (let i = 0; i < p.length; i++) {
+                h = ((h << 5) - h) + p.charCodeAt(i);
+                h |= 0;
+            }
+            return 'h_' + Math.abs(h).toString(36) + '_' + p.length;
+        }
+
+        /* ════════════════════════════════════════
+           AUTH STATE
+        ════════════════════════════════════════ */
+        let currentUser = null;
+
+        function doLogin() {
+            const u = document.getElementById('login-user').value.trim();
+            const p = document.getElementById('login-pass').value;
+            const err = document.getElementById('login-error');
+
+            if (!u || !p) { showAuthError('login-error', 'Please fill in all fields.'); return; }
+
+            const user = DB.users.find(x => x.username === u && x.password === hashPass(p));
+            if (!user) { showAuthError('login-error', 'Invalid username or password.'); return; }
+
+            currentUser = user;
+            logActivity('LOGIN', `${user.name} signed in`, user.username);
+            saveDB();
+
+            err.className = 'auth-error';
+            document.getElementById('auth-screen').classList.add('hidden');
+            setTimeout(() => {
+                document.getElementById('app').classList.add('visible');
+                initApp();
+            }, 300);
+        }
+
+        function doRegister() {
+            const name = document.getElementById('reg-name').value.trim();
+            const u = document.getElementById('reg-user').value.trim();
+            const p = document.getElementById('reg-pass').value;
+
+            if (!name || !u || !p) { showAuthError('reg-error', 'All fields are required.'); return; }
+            if (p.length < 6) { showAuthError('reg-error', 'Password must be at least 6 characters.'); return; }
+            if (DB.users.find(x => x.username === u)) { showAuthError('reg-error', 'Username already taken.'); return; }
+
+            DB.users.push({
+                id: DB._usersSeq++, name, username: u,
+                password: hashPass(p), role: 'librarian',
+                createdAt: new Date().toISOString()
+            });
+            saveDB();
+
+            const s = document.getElementById('reg-success');
+            s.textContent = 'Account created! You can now sign in.';
+            s.className = 'auth-success show';
+            document.getElementById('reg-error').className = 'auth-error';
+
+            setTimeout(() => {
+                switchAuthTab('login');
+                document.getElementById('login-user').value = u;
+                s.className = 'auth-success';
+            }, 1500);
+        }
+
+        function doLogout() {
+            currentUser = null;
+            document.getElementById('app').classList.remove('visible');
+            document.getElementById('app').style.display = 'none';
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('auth-screen').style.display = '';
+            // Reset
+            document.getElementById('login-user').value = '';
+            document.getElementById('login-pass').value = '';
+            document.getElementById('login-error').className = 'auth-error';
+            setTimeout(() => {
+                document.getElementById('app').style.display = '';
+                document.getElementById('auth-screen').style.display = '';
+            }, 50);
+        }
+
+        function showAuthError(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = 'auth-error show';
+        }
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach((t, i) =>
+                t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'))
+            );
+            document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+            document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+        }
+
+        /* ════════════════════════════════════════
+           APP INIT
+        ════════════════════════════════════════ */
+        function initApp() {
+            // Update user info in sidebar
+            const initials = currentUser.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+            document.getElementById('user-avatar').textContent = initials;
+            document.getElementById('user-display').textContent = currentUser.name;
+            document.getElementById('user-role').textContent = currentUser.role;
+
+            updateBadges();
+            navigate('dashboard');
+            updateAuthStats();
+        }
+
+        function updateBadges() {
+            document.getElementById('nb-books').textContent = DB.books.length;
+            document.getElementById('nb-issues').textContent = DB.issues.filter(i => i.status === 'issued').length;
+        }
+
+        function updateAuthStats() {
+            document.getElementById('as-books').textContent = DB.books.length;
+            document.getElementById('as-issued').textContent = DB.issues.filter(i => i.status === 'issued').length;
+            document.getElementById('as-users').textContent = DB.users.length;
+        }
+
+        /* ════════════════════════════════════════
+           NAVIGATION
+        ════════════════════════════════════════ */
+        const PAGE_META = {
+            dashboard: { title: 'Dashboard', sub: 'Overview of your library' },
+            books: { title: 'Book Catalog', sub: 'Manage all books' },
+            issues: { title: 'Issues & Returns', sub: 'Track book loans' },
+            users: { title: 'User Management', sub: 'Manage accounts' },
+            activity: { title: 'Activity Log', sub: 'Full audit trail' },
+        };
+
+        function navigate(page) {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.toggle('active', el.onclick?.toString().includes(`'${page}'`));
+            });
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const el = document.getElementById(`page-${page}`);
+            if (el) el.classList.add('active');
+
+            const m = PAGE_META[page] || {};
+            document.getElementById('page-title').textContent = m.title || page;
+            document.getElementById('page-sub').textContent = m.sub || '';
+
+            // Render page content
+            if (page === 'dashboard') renderDashboard();
+            if (page === 'books') renderBooksTable();
+            if (page === 'issues') renderIssuesTable();
+            if (page === 'users') renderUsersTable();
+            if (page === 'activity') renderActivityPage();
+        }
+
+        /* ════════════════════════════════════════
+           DASHBOARD
+        ════════════════════════════════════════ */
+        function renderDashboard() {
+            const totalBooks = DB.books.length;
+            const totalCopies = DB.books.reduce((a, b) => a + b.quantity, 0);
+            const issued = DB.issues.filter(i => i.status === 'issued').length;
+            const available = DB.books.reduce((a, b) => a + (b.quantity - b.issued), 0);
+
+            document.getElementById('s-total-books').textContent = totalBooks;
+            document.getElementById('s-total-copies').textContent = totalCopies;
+            document.getElementById('s-issued').textContent = issued;
+            document.getElementById('s-available').textContent = Math.max(0, available);
+
+            // Recent books (last 5)
+            const recBooks = [...DB.books].sort((a, b) => b.id - a.id).slice(0, 5);
+            const tbody = document.getElementById('dash-books-body');
+            if (recBooks.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📚</div><p>No books yet</p></div></td></tr>`;
+            } else {
+                tbody.innerHTML = recBooks.map(b => {
+                    const avail = b.quantity - b.issued;
+                    const status = avail > 0
+                        ? `<span class="badge badge-green">Available</span>`
+                        : `<span class="badge badge-red">Unavailable</span>`;
+                    return `<tr>
+        <td><strong>${esc(b.title)}</strong></td>
+        <td>${esc(b.author)}</td>
+        <td><span class="badge badge-blue">${esc(b.genre)}</span></td>
+        <td>${avail}/${b.quantity}</td>
+        <td>${status}</td>
+      </tr>`;
+                }).join('');
+            }
+
+            // Activity feed
+            const feed = document.getElementById('feed-body');
+            const logs = [...DB.activity].reverse().slice(0, 10);
+            if (logs.length === 0) {
+                feed.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><p>No activity yet</p></div>`;
+            } else {
+                feed.innerHTML = logs.map(l => {
+                    const dotClass = { ADD: 'add', EDIT: 'add', DELETE: 'del', ISSUE: 'issue', RETURN: 'ret', LOGIN: 'login' }[l.type] || 'add';
+                    return `<div class="feed-item">
+        <div class="feed-dot ${dotClass}"></div>
+        <div>
+          <div class="feed-text">${esc(l.description)}</div>
+          <div class="feed-time">${formatDateTime(l.timestamp)} · ${esc(l.user || 'system')}</div>
+        </div>
+      </div>`;
+                }).join('');
+            }
+        }
+
+        /* ════════════════════════════════════════
+           BOOKS TABLE
+        ════════════════════════════════════════ */
+        let bookSort = { col: 'id', dir: 'asc' };
+        let bookPage = 1;
+        const BOOKS_PER_PAGE = 10;
+
+        function sortBooks(col) {
+            if (bookSort.col === col) bookSort.dir = bookSort.dir === 'asc' ? 'desc' : 'asc';
+            else { bookSort.col = col; bookSort.dir = 'asc'; }
+            bookPage = 1;
+            renderBooksTable();
+        }
+
+        function renderBooksTable() {
+            const search = (document.getElementById('book-search')?.value || '').toLowerCase();
+            const genre = document.getElementById('book-genre-filter')?.value || '';
+            const avFilter = document.getElementById('book-avail-filter')?.value || '';
+
+            let books = DB.books.filter(b => {
+                const matchS = !search || b.title.toLowerCase().includes(search)
+                    || b.author.toLowerCase().includes(search)
+                    || b.genre.toLowerCase().includes(search)
+                    || (b.isbn || '').includes(search);
+                const matchG = !genre || b.genre === genre;
+                const avail = b.quantity - b.issued;
+                const matchA = !avFilter
+                    || (avFilter === 'available' && avail > 0)
+                    || (avFilter === 'unavailable' && avail <= 0);
+                return matchS && matchG && matchA;
+            });
+
+            // Sort
+            books.sort((a, b) => {
+                let va = a[bookSort.col], vb = b[bookSort.col];
+                if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+                if (va < vb) return bookSort.dir === 'asc' ? -1 : 1;
+                if (va > vb) return bookSort.dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const total = books.length;
+            const totalPages = Math.max(1, Math.ceil(total / BOOKS_PER_PAGE));
+            bookPage = Math.min(bookPage, totalPages);
+            const paged = books.slice((bookPage - 1) * BOOKS_PER_PAGE, bookPage * BOOKS_PER_PAGE);
+
+            const tbody = document.getElementById('books-table-body');
+            if (paged.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-icon">📚</div><p>No books found</p></div></td></tr>`;
+            } else {
+                tbody.innerHTML = paged.map(b => {
+                    const avail = b.quantity - b.issued;
+                    const status = avail > 0
+                        ? `<span class="badge badge-green">Available</span>`
+                        : `<span class="badge badge-red">Out of Stock</span>`;
+                    return `<tr>
+        <td><span style="color:var(--text3);font-size:.8rem">#${b.id}</span></td>
+        <td>
+          <strong>${esc(b.title)}</strong>
+          ${b.isbn ? `<div class="td-sub">ISBN: ${esc(b.isbn)}</div>` : ''}
+        </td>
+        <td>${esc(b.author)}</td>
+        <td><span class="badge badge-blue">${esc(b.genre)}</span></td>
+        <td style="text-align:center">${b.quantity}</td>
+        <td style="text-align:center"><span class="${b.issued > 0 ? 'badge badge-amber' : ''}">${b.issued}</span></td>
+        <td style="text-align:center"><strong style="color:${avail > 0 ? 'var(--green)' : 'var(--red)'}">${avail}</strong></td>
+        <td>${status}</td>
+        <td>
+          <div class="action-btns">
+            <button class="act-btn edit" title="Edit" onclick="editBook(${b.id})">✏️</button>
+            <button class="act-btn issue" title="Issue" onclick="openIssueForBook(${b.id})" ${avail <= 0 ? 'disabled style="opacity:.35"' : ''}>📤</button>
+            <button class="act-btn del" title="Delete" onclick="deleteBook(${b.id})">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+                }).join('');
+            }
+
+            document.getElementById('book-count').textContent = `${total} book${total !== 1 ? 's' : ''}`;
+            renderPagination('book', bookPage, totalPages, (p) => { bookPage = p; renderBooksTable() });
+        }
+
+        /* ════════════════════════════════════════
+           BOOK CRUD
+        ════════════════════════════════════════ */
+        function openAddBook() {
+            document.getElementById('book-modal-title').textContent = 'Add New Book';
+            document.getElementById('book-edit-id').value = '';
+            ['book-title', 'book-author', 'book-qty', 'book-isbn'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('book-genre').value = 'General';
+            openModal('book-modal');
+            navigate('books');
+        }
+
+        function editBook(id) {
+            const b = DB.books.find(x => x.id === id);
+            if (!b) return;
+            document.getElementById('book-modal-title').textContent = 'Edit Book';
+            document.getElementById('book-edit-id').value = id;
+            document.getElementById('book-title').value = b.title;
+            document.getElementById('book-author').value = b.author;
+            document.getElementById('book-genre').value = b.genre;
+            document.getElementById('book-qty').value = b.quantity;
+            document.getElementById('book-isbn').value = b.isbn || '';
+            openModal('book-modal');
+        }
+
+        function saveBook() {
+            const title = document.getElementById('book-title').value.trim();
+            const author = document.getElementById('book-author').value.trim();
+            const genre = document.getElementById('book-genre').value;
+            const qty = parseInt(document.getElementById('book-qty').value) || 0;
+            const isbn = document.getElementById('book-isbn').value.trim();
+            const editId = document.getElementById('book-edit-id').value;
+
+            if (!title) { toast('Book title is required', 'error'); return; }
+            if (!author) { toast('Author name is required', 'error'); return; }
+            if (isNaN(qty) || qty < 0) { toast('Quantity must be 0 or more', 'error'); return; }
+
+            if (editId) {
+                const b = DB.books.find(x => x.id === +editId);
+                if (b) {
+                    b.title = title; b.author = author; b.genre = genre; b.quantity = qty; b.isbn = isbn;
+                    logActivity('EDIT', `Updated book: "${title}"`, currentUser.username);
+                    toast(`Book "${title}" updated`, 'success');
+                }
+            } else {
+                DB.books.push({
+                    id: DB._booksSeq++, title, author, genre, quantity: qty, issued: 0,
+                    isbn, addedAt: new Date().toISOString()
+                });
+                logActivity('ADD', `Added new book: "${title}" by ${author}`, currentUser.username);
+                toast(`Book "${title}" added`, 'success');
+            }
+
+            saveDB(); updateBadges(); closeModal('book-modal');
+            renderBooksTable(); renderDashboard();
+        }
+
+        function deleteBook(id) {
+            const b = DB.books.find(x => x.id === id);
+            if (!b) return;
+            confirmAction(`Delete "${b.title}"?`,
+                'This action cannot be undone. Any active issues will be orphaned.',
+                () => {
+                    DB.books = DB.books.filter(x => x.id !== id);
+                    logActivity('DELETE', `Deleted book: "${b.title}"`, currentUser.username);
+                    saveDB(); updateBadges(); renderBooksTable(); renderDashboard();
+                    toast(`"${b.title}" deleted`, 'info');
+                }
+            );
+        }
+
+        /* ════════════════════════════════════════
+           ISSUES TABLE
+        ════════════════════════════════════════ */
+        let issueSort = { col: 'id', dir: 'desc' };
+        let issuePage = 1;
+        const ISSUES_PER_PAGE = 10;
+
+        function sortIssues(col) {
+            if (issueSort.col === col) issueSort.dir = issueSort.dir === 'asc' ? 'desc' : 'asc';
+            else { issueSort.col = col; issueSort.dir = 'desc'; }
+            issuePage = 1; renderIssuesTable();
+        }
+
+        function renderIssuesTable() {
+            const search = (document.getElementById('issue-search')?.value || '').toLowerCase();
+            const statusF = document.getElementById('issue-status-filter')?.value || '';
+
+            const today = new Date().toISOString().slice(0, 10);
+
+            let issues = DB.issues.filter(i => {
+                // Compute effective status
+                const effStatus = i.status === 'issued' && i.dueDate && i.dueDate < today ? 'overdue' : i.status;
+                const matchS = !search
+                    || (i.bookTitle || '').toLowerCase().includes(search)
+                    || (i.borrower || '').toLowerCase().includes(search)
+                    || (i.contact || '').toLowerCase().includes(search);
+                const matchF = !statusF || effStatus === statusF;
+                return matchS && matchF;
+            });
+
+            issues.sort((a, b) => {
+                let va = a[issueSort.col], vb = b[issueSort.col];
+                if (typeof va === 'string') va = va.toLowerCase(), vb = vb.toLowerCase();
+                if (va < vb) return issueSort.dir === 'asc' ? -1 : 1;
+                if (va > vb) return issueSort.dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            const total = issues.length;
+            const totalPages = Math.max(1, Math.ceil(total / ISSUES_PER_PAGE));
+            issuePage = Math.min(issuePage, totalPages);
+            const paged = issues.slice((issuePage - 1) * ISSUES_PER_PAGE, issuePage * ISSUES_PER_PAGE);
+
+            const tbody = document.getElementById('issues-table-body');
+            if (paged.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📤</div><p>No records found</p></div></td></tr>`;
+            } else {
+                tbody.innerHTML = paged.map(i => {
+                    const effStatus = i.status === 'issued' && i.dueDate && i.dueDate < today ? 'overdue' : i.status;
+                    const statusBadge = {
+                        issued: `<span class="badge badge-blue">Issued</span>`,
+                        returned: `<span class="badge badge-green">Returned</span>`,
+                        overdue: `<span class="badge badge-red">Overdue</span>`,
+                    }[effStatus] || '';
+                    return `<tr>
+        <td><span style="color:var(--text3);font-size:.8rem">#${i.id}</span></td>
+        <td><strong>${esc(i.bookTitle || '—')}</strong></td>
+        <td>
+          ${esc(i.borrower)}
+          ${i.contact ? `<div class="td-sub">${esc(i.contact)}</div>` : ''}
+        </td>
+        <td>${i.issueDate || '—'}</td>
+        <td>${i.dueDate || '—'}</td>
+        <td>${i.returnDate || '—'}</td>
+        <td>${statusBadge}</td>
+        <td>
+          <div class="action-btns">
+            ${effStatus !== 'returned'
+                            ? `<button class="act-btn ret" title="Mark Returned" onclick="returnBook(${i.id})">📥</button>`
+                            : `<span style="font-size:.75rem;color:var(--text3)">Done</span>`
+                        }
+            <button class="act-btn del" title="Delete record" onclick="deleteIssue(${i.id})">🗑</button>
+          </div>
+        </td>
+      </tr>`;
+                }).join('');
+            }
+
+            document.getElementById('issue-count').textContent = `${total} record${total !== 1 ? 's' : ''}`;
+            renderPagination('issue', issuePage, totalPages, (p) => { issuePage = p; renderIssuesTable() });
+        }
+
+        /* ════════════════════════════════════════
+           ISSUE / RETURN CRUD
+        ════════════════════════════════════════ */
+        function openIssueModal() {
+            // Populate book select
+            const sel = document.getElementById('issue-book-id');
+            sel.innerHTML = '<option value="">— Choose a book —</option>';
+            DB.books.filter(b => (b.quantity - b.issued) > 0).forEach(b => {
+                sel.innerHTML += `<option value="${b.id}">${esc(b.title)} by ${esc(b.author)} (${b.quantity - b.issued} avail.)</option>`;
+            });
+
+            // Default dates
+            const today = new Date();
+            const due = new Date(today); due.setDate(due.getDate() + 14);
+            document.getElementById('issue-date').value = today.toISOString().slice(0, 10);
+            document.getElementById('issue-due').value = due.toISOString().slice(0, 10);
+            document.getElementById('issue-borrower').value = '';
+            document.getElementById('issue-contact').value = '';
+            openModal('issue-modal');
+        }
+
+        function openIssueForBook(bookId) {
+            openIssueModal();
+            setTimeout(() => { document.getElementById('issue-book-id').value = bookId; }, 50);
+        }
+
+        function saveIssue() {
+            const bookId = +document.getElementById('issue-book-id').value;
+            const borrower = document.getElementById('issue-borrower').value.trim();
+            const contact = document.getElementById('issue-contact').value.trim();
+            const issueDate = document.getElementById('issue-date').value;
+            const dueDate = document.getElementById('issue-due').value;
+
+            if (!bookId) { toast('Please select a book', 'error'); return; }
+            if (!borrower) { toast('Borrower name is required', 'error'); return; }
+
+            const book = DB.books.find(b => b.id === bookId);
+            if (!book) { toast('Book not found', 'error'); return; }
+            if ((book.quantity - book.issued) <= 0) { toast('No copies available', 'error'); return; }
+
+            book.issued++;
+            DB.issues.push({
+                id: DB._issuesSeq++,
+                bookId, bookTitle: book.title,
+                borrower, contact, issueDate, dueDate,
+                returnDate: null, status: 'issued',
+                issuedBy: currentUser.username,
+                issuedAt: new Date().toISOString()
+            });
+
+            logActivity('ISSUE', `"${book.title}" issued to ${borrower}`, currentUser.username);
+            saveDB(); updateBadges(); closeModal('issue-modal');
+            renderIssuesTable(); renderDashboard();
+            toast(`"${book.title}" issued to ${borrower}`, 'success');
+        }
+
+        function returnBook(issueId) {
+            const rec = DB.issues.find(i => i.id === issueId);
+            if (!rec) return;
+            const book = DB.books.find(b => b.id === rec.bookId);
+
+            confirmAction(`Return "${rec.bookTitle}"?`,
+                `Confirm that ${rec.borrower} is returning this book.`,
+                () => {
+                    rec.status = 'returned';
+                    rec.returnDate = new Date().toISOString().slice(0, 10);
+                    if (book && book.issued > 0) book.issued--;
+                    logActivity('RETURN', `"${rec.bookTitle}" returned by ${rec.borrower}`, currentUser.username);
+                    saveDB(); updateBadges(); renderIssuesTable(); renderDashboard();
+                    toast(`"${rec.bookTitle}" returned`, 'success');
+                }
+            );
+        }
+
+        function deleteIssue(id) {
+            const rec = DB.issues.find(i => i.id === id);
+            if (!rec) return;
+            confirmAction('Delete this record?', 'This issue record will be permanently removed.', () => {
+                if (rec.status === 'issued') {
+                    const book = DB.books.find(b => b.id === rec.bookId);
+                    if (book && book.issued > 0) book.issued--;
+                }
+                DB.issues = DB.issues.filter(i => i.id !== id);
+                saveDB(); updateBadges(); renderIssuesTable(); renderDashboard();
+                toast('Issue record deleted', 'info');
+            });
+        }
+
+        /* ════════════════════════════════════════
+           USERS TABLE
+        ════════════════════════════════════════ */
+        function renderUsersTable() {
+            const search = (document.getElementById('user-search')?.value || '').toLowerCase();
+            const users = DB.users.filter(u =>
+                !search || u.name.toLowerCase().includes(search) || u.username.toLowerCase().includes(search)
+            );
+            const tbody = document.getElementById('users-table-body');
+            if (users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">👥</div><p>No users</p></div></td></tr>`;
+            } else {
+                tbody.innerHTML = users.map((u, i) => `<tr>
+      <td>${i + 1}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:9px">
+          <div style="width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0">
+            ${u.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+          </div>
+          <strong>${esc(u.name)}</strong>
+        </div>
+      </td>
+      <td><code style="background:var(--bg2);padding:3px 8px;border-radius:6px;font-size:.82rem">@${esc(u.username)}</code></td>
+      <td><span class="badge ${u.role === 'admin' ? 'badge-amber' : 'badge-blue'}">${u.role}</span></td>
+      <td style="font-size:.82rem;color:var(--text2)">${formatDate(u.createdAt)}</td>
+      <td>
+        <div class="action-btns">
+          ${u.id !== currentUser.id
+                        ? `<button class="act-btn del" title="Delete" onclick="deleteUser(${u.id})">🗑</button>`
+                        : `<span style="font-size:.75rem;color:var(--text3)">You</span>`}
+        </div>
+      </td>
+    </tr>`).join('');
+            }
+        }
+
+        function deleteUser(id) {
+            const u = DB.users.find(x => x.id === id);
+            if (!u) return;
+            if (u.id === currentUser.id) { toast("Can't delete your own account", 'error'); return; }
+            confirmAction(`Delete user "${u.name}"?`, 'Their account will be permanently removed.', () => {
+                DB.users = DB.users.filter(x => x.id !== id);
+                saveDB(); renderUsersTable();
+                toast(`User "${u.name}" deleted`, 'info');
+            });
+        }
+
+        /* ════════════════════════════════════════
+           ACTIVITY PAGE
+        ════════════════════════════════════════ */
+        function renderActivityPage() {
+            const search = (document.getElementById('act-search')?.value || '').toLowerCase();
+            const typeF = document.getElementById('act-type-filter')?.value || '';
+            const logs = [...DB.activity].reverse().filter(l =>
+                (!search || l.description.toLowerCase().includes(search) || (l.user || '').toLowerCase().includes(search)) &&
+                (!typeF || l.type === typeF)
+            );
+            const tbody = document.getElementById('activity-table-body');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">📋</div><p>No logs</p></div></td></tr>`;
+            } else {
+                const typeColors = { ADD: 'badge-green', EDIT: 'badge-blue', DELETE: 'badge-red', ISSUE: 'badge-blue', RETURN: 'badge-amber', LOGIN: 'badge-amber' };
+                tbody.innerHTML = logs.map((l, i) => `<tr>
+      <td>${logs.length - i}</td>
+      <td><span class="badge ${typeColors[l.type] || 'badge-blue'}">${l.type}</span></td>
+      <td>${esc(l.description)}</td>
+      <td><code style="background:var(--bg2);padding:2px 8px;border-radius:5px;font-size:.8rem">@${esc(l.user || 'system')}</code></td>
+      <td style="font-size:.82rem;color:var(--text2)">${formatDateTime(l.timestamp)}</td>
+    </tr>`).join('');
+            }
+        }
+
+        function logActivity(type, description, user = 'system') {
+            DB.activity.push({
+                id: DB._actSeq++, type, description,
+                user, timestamp: new Date().toISOString()
+            });
+            // Keep last 500
+            if (DB.activity.length > 500) DB.activity = DB.activity.slice(-500);
+        }
+
+        /* ════════════════════════════════════════
+           PAGINATION
+        ════════════════════════════════════════ */
+        function renderPagination(prefix, currentPage, totalPages, onPageChange) {
+            const infoEl = document.getElementById(`${prefix}-page-info`);
+            const btnsEl = document.getElementById(`${prefix}-page-btns`);
+            if (!infoEl || !btnsEl) return;
+
+            infoEl.textContent = `Page ${currentPage} of ${totalPages}`;
+            const pages = [];
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) pages.push(i);
+            } else {
+                pages.push(1);
+                if (currentPage > 3) pages.push('…');
+                for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+                if (currentPage < totalPages - 2) pages.push('…');
+                pages.push(totalPages);
+            }
+
+            btnsEl.innerHTML = `
+    <button class="page-btn" onclick="(${onPageChange.toString()})(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>‹</button>
+    ${pages.map(p => typeof p === 'number'
+                ? `<button class="page-btn ${p === currentPage ? 'active' : ''}" onclick="(${onPageChange.toString()})(${p})">${p}</button>`
+                : `<span style="padding:0 4px;color:var(--text3)">…</span>`
+            ).join('')}
+    <button class="page-btn" onclick="(${onPageChange.toString()})(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>›</button>
+  `;
+        }
+
+        /* ════════════════════════════════════════
+           MODALS
+        ════════════════════════════════════════ */
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+        }
+        // Close on overlay click
+        document.querySelectorAll('.modal-overlay').forEach(el => {
+            el.addEventListener('click', e => {
+                if (e.target === el) closeModal(el.id);
+            });
+        });
+        // ESC key
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal-overlay.open').forEach(el => closeModal(el.id));
+            }
+        });
+
+        /* ════════════════════════════════════════
+           CONFIRM DIALOG
+        ════════════════════════════════════════ */
+        function confirmAction(title, message, onConfirm) {
+            const overlay = document.createElement('div');
+            overlay.className = 'confirm-overlay';
+            overlay.innerHTML = `
+    <div class="confirm-box">
+      <div class="ci">⚠️</div>
+      <h4>${esc(title)}</h4>
+      <p>${esc(message)}</p>
+      <div class="confirm-btns">
+        <button class="btn btn-ghost" id="confirm-cancel">Cancel</button>
+        <button class="btn btn-danger" id="confirm-ok">Confirm</button>
+      </div>
+    </div>`;
+            document.body.appendChild(overlay);
+            overlay.querySelector('#confirm-cancel').onclick = () => overlay.remove();
+            overlay.querySelector('#confirm-ok').onclick = () => { overlay.remove(); onConfirm() };
+        }
+
+        /* ════════════════════════════════════════
+           TOAST NOTIFICATIONS
+        ════════════════════════════════════════ */
+        function toast(message, type = 'info') {
+            const icons = { success: '✓', error: '✕', info: 'ℹ', warning: '⚠' };
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            el.className = `toast toast-${type}`;
+            el.style.position = 'relative';
+            el.innerHTML = `
+    <span class="toast-icon">${icons[type] || 'ℹ'}</span>
+    <span>${esc(message)}</span>
+    <div class="toast-progress"></div>`;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.classList.add('removing');
+                setTimeout(() => el.remove(), 250);
+            }, 3000);
+        }
+
+        /* ════════════════════════════════════════
+           THEME
+        ════════════════════════════════════════ */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.getAttribute('data-theme') === 'dark';
+            html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            document.getElementById('theme-knob').textContent = isDark ? '🌙' : '☀️';
+            localStorage.setItem('libraryos_theme', isDark ? 'light' : 'dark');
+        }
+
+        function loadTheme() {
+            const t = localStorage.getItem('libraryos_theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', t);
+            const knob = document.getElementById('theme-knob');
+            if (knob) knob.textContent = t === 'dark' ? '☀️' : '🌙';
+        }
+
+        /* ════════════════════════════════════════
+           UTILITIES
+        ════════════════════════════════════════ */
+        function esc(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            try { return new Date(iso).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }); }
+            catch (e) { return iso.slice(0, 10); }
+        }
+
+        function formatDateTime(iso) {
+            if (!iso) return '—';
+            try { return new Date(iso).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+            catch (e) { return iso.slice(0, 16).replace('T', ' '); }
+        }
+
+        // Enter key on login
+        document.getElementById('login-pass').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doLogin();
+        });
+        document.getElementById('login-user').addEventListener('keydown', e => {
+            if (e.key === 'Enter') doLogin();
+        });
+
+        /* ════════════════════════════════════════
+           BOOT
+        ════════════════════════════════════════ */
+        loadTheme();
+        loadDB();
+        seedDB();
+        updateAuthStats();
+    </script>
+</body>
+
+</html>
